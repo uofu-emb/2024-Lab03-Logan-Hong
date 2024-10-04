@@ -5,6 +5,7 @@
 #include <pico/stdlib.h>
 #include <pico/multicore.h>
 #include <pico/cyw43_arch.h>
+#include "threading.h"
 
 #define MAIN_TASK_PRIORITY      ( tskIDLE_PRIORITY + 1UL )
 #define MAIN_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
@@ -17,14 +18,22 @@ SemaphoreHandle_t semaphore;
 int counter;
 int on;
 
+int increment_counter(SemaphoreHandle_t semaphore, int *counter, const char *source_thread, TickType_t timeout) {
+    if (xSemaphoreTake(semaphore, timeout) == pdFALSE)
+        return pdFALSE;
+    {
+        (*counter)++;
+        printf("hello world from %s! Count %d\n", source_thread, *counter);
+    }
+    xSemaphoreGive(semaphore);
+    return pdTRUE;
+}
+
 void side_thread(void *params)
 {
 	while (1) {
         vTaskDelay(100);
-        xSemaphoreTake(semaphore, portMAX_DELAY);
-        counter += 1;
-		printf("hello world from %s! Count %d\n", "thread", counter);
-        xSemaphoreGive(semaphore);
+        increment_counter(semaphore, &counter, "side", portMAX_DELAY);
 	}
 }
 
@@ -33,9 +42,7 @@ void main_thread(void *params)
 	while (1) {
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, on);
         vTaskDelay(100);
-        xSemaphoreTake(semaphore, portMAX_DELAY);
-		printf("hello world from %s! Count %d\n", "main", counter++);
-        xSemaphoreGive(semaphore);
+		increment_counter(semaphore, &counter, "main", portMAX_DELAY);
         on = !on;
 	}
 }

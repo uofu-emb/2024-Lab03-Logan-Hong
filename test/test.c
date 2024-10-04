@@ -2,7 +2,10 @@
 #include <pico/stdlib.h>
 #include <stdint.h>
 #include <unity.h>
+#include <FreeRTOS.h>
+#include <semphr.h>
 #include "unity_config.h"
+#include "threading.h"
 
 void setUp(void) {}
 
@@ -10,8 +13,9 @@ void tearDown(void) {}
 
 void test_variable_assignment()
 {
-    int x = 1;
-    TEST_ASSERT_TRUE_MESSAGE(x == 1,"Variable assignment failed.");
+    SemaphoreHandle_t semaphore = xSemaphoreCreateCounting(1, 1);
+    int counter = 0;
+    increment_counter(semaphore, &counter, "test", portMAX_DELAY);
 }
 
 void test_multiplication(void)
