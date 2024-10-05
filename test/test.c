@@ -11,20 +11,30 @@ void setUp(void) {}
 
 void tearDown(void) {}
 
-void test_variable_assignment()
+void test_standard_behavior()
 {
     SemaphoreHandle_t semaphore = xSemaphoreCreateCounting(1, 1);
     int counter = 0;
-    increment_counter(semaphore, &counter, "test", portMAX_DELAY);
+
+    int result = increment_counter(semaphore, &counter, "test", portMAX_DELAY);
+
+    TEST_ASSERT_TRUE_MESSAGE(result, "increment_counter failed");
+    TEST_ASSERT_EQUAL_INT_MESSAGE(1, counter, "counter not incremented");
 }
 
-void test_multiplication(void)
+void test_timeout()
 {
-    int x = 30;
-    int y = 6;
-    int z = x / y;
-    TEST_ASSERT_TRUE_MESSAGE(z == 5, "Multiplication of two integers returned incorrect value.");
+    SemaphoreHandle_t semaphore = xSemaphoreCreateCounting(1, 1);
+    int counter = 0;
+
+    xSemaphoreTake(semaphore, portMAX_DELAY);
+
+    int result = increment_counter(semaphore, &counter, "test", portMAX_DELAY);
+
+    TEST_ASSERT_FALSE_MESSAGE(result, "increment_counter succeeded");
+    TEST_ASSERT_EQUAL_INT_MESSAGE(0, counter, "counter incremented");
 }
+    
 
 int main (void)
 {
@@ -32,8 +42,8 @@ int main (void)
     sleep_ms(5000); // Give time for TTY to attach.
     printf("Start tests\n");
     UNITY_BEGIN();
-    RUN_TEST(test_variable_assignment);
-    RUN_TEST(test_multiplication);
+    RUN_TEST(test_standard_behavior);
+    RUN_TEST(test_timeout);
     sleep_ms(5000);
     return UNITY_END();
 }
