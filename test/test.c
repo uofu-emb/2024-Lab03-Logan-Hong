@@ -82,6 +82,26 @@ void test_deadlock() {
     vTaskDelete(thread_b);
 }
 
+void test_orphaned_lock() {
+    SemaphoreHandle_t semaphore = xSemaphoreCreateCounting(1, 1);
+    int counter = 0;
+
+    int result = orphaned_lock(semaphore, portMAX_DELAY, &counter);
+
+    TEST_ASSERT_FALSE_MESSAGE(result, "orphaned_lock failed");
+    TEST_ASSERT_EQUAL_INT_MESSAGE(1, counter, "incorrect counter value");
+}
+
+void test_unorphaned_lock() {
+    SemaphoreHandle_t semaphore = xSemaphoreCreateCounting(1, 1);
+    int counter = 0;
+
+    int result = unorphaned_lock(semaphore, portMAX_DELAY, &counter);
+
+    TEST_ASSERT_TRUE_MESSAGE(result, "unorphaned_lock failed");
+    TEST_ASSERT_EQUAL_INT_MESSAGE(1, counter, "incorrect counter value");
+}
+
 int main (void)
 {
     stdio_init_all();
@@ -91,6 +111,8 @@ int main (void)
     RUN_TEST(test_standard_behavior);
     RUN_TEST(test_timeout);
     RUN_TEST(test_deadlock);
+    RUN_TEST(test_orphaned_lock);
+    RUN_TEST(test_unorphaned_lock);
     sleep_ms(5000);
     return UNITY_END();
 }

@@ -24,3 +24,7 @@ struct deadlock_params {
 int increment_counter(SemaphoreHandle_t semaphore, int *counter, const char *source_thread, TickType_t timeout);
 
 void deadlock(void* params);
+
+int orphaned_lock(SemaphoreHandle_t semaphore, TickType_t timeout, int *counter);
+
+int unorphaned_lock(SemaphoreHandle_t semaphore, TickType_t timeout, int *counter);

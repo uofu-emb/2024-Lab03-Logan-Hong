@@ -38,3 +38,32 @@ void deadlock(void* params) {
     // Thread will eventually timeout on the semaphore take and exit to here.
     vTaskSuspend(NULL);
 }
+
+int orphaned_lock(SemaphoreHandle_t semaphore, TickType_t timeout, int *counter)
+{
+    if (xSemaphoreTake(semaphore, timeout) == pdFALSE)
+        return pdFALSE;
+    {
+        (*counter)++;
+        if (*counter % 2) {
+            return 0;
+        }
+        printf("Count %d\n", *counter);
+    }
+    xSemaphoreGive(semaphore);
+    return pdTRUE;
+}
+
+int unorphaned_lock(SemaphoreHandle_t semaphore, TickType_t timeout, int *counter)
+{
+    if (xSemaphoreTake(semaphore, timeout) == pdFALSE)
+        return pdFALSE;
+    {
+        (*counter)++;
+        if (*counter % 2) {
+            printf("Count %d\n", *counter);
+        }
+    }
+    xSemaphoreGive(semaphore);
+    return pdTRUE;
+}
