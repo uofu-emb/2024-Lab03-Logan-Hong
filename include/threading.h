@@ -14,4 +14,13 @@
 #define SIDE_TASK_PRIORITY      ( tskIDLE_PRIORITY + 1UL )
 #define SIDE_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 
+struct deadlock_params {
+    SemaphoreHandle_t semaphore_a;
+    SemaphoreHandle_t semaphore_b;
+    int counter;
+    const char *source_thread;
+};
+
 int increment_counter(SemaphoreHandle_t semaphore, int *counter, const char *source_thread, TickType_t timeout);
+
+void deadlock(void* params);
